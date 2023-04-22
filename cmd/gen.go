@@ -9,10 +9,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var template map[string]string = map[string]string{
-	"default":  "",
-	"react":    "",
-	"react-ts": "",
+var template map[string]map[string]string = map[string]map[string]string{
+	"default": {
+		"url": "",
+	},
+	"react":    {},
+	"react-ts": {},
 }
 
 // genCmd represents the gen command

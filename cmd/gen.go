@@ -24,8 +24,10 @@ type TemplateType struct {
 // The templates
 var templates map[string]TemplateType = map[string]TemplateType{
 	"default": {
-		url:        "https://github.com/unknown989/webgen",
-		folder:     "templates/default",
+		url:    "https://github.com/unknown989/webgen",
+		folder: "templates/default",
+		// Files to replace custom variables to their corresponding values
+		// Like ${APP_NAME} is replaced to the app name you chosed
 		to_replace: "index.html",
 	},
 	"react": {
@@ -35,7 +37,13 @@ var templates map[string]TemplateType = map[string]TemplateType{
 		// Like ${APP_NAME} is replaced to the app name you chosed
 		to_replace: "src/App.jsx,package.json",
 	},
-	"react-ts": {},
+	"react-ts": {
+		url:    "https://github.com/unknown989/webgen",
+		folder: "templates/react-ts",
+		// Files to replace custom variables to their corresponding values
+		// Like ${APP_NAME} is replaced to the app name you chosed
+		to_replace: "src/App.tsx,package.json",
+	},
 }
 
 // if err is an error, then kill the app, if not, do nothing

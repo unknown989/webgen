@@ -1,0 +1,1 @@
+document.getElementById("footer").innerHTML = "This footer is generated with JavaScript"

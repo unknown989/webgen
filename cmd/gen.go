@@ -5,16 +5,84 @@ package cmd
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"os/exec"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
 
-var template map[string]map[string]string = map[string]map[string]string{
+type TemplateType struct {
+	url        string
+	folder     string
+	to_replace string
+}
+
+var templates map[string]TemplateType = map[string]TemplateType{
 	"default": {
-		"url": "",
+		url:        "https://github.com/unknown989/webgen",
+		folder:     "templates/default",
+		to_replace: "index.html",
 	},
-	"react":    {},
+	"react": {
+		url:        "https://github.com/unknown989/webgen",
+		folder:     "templates/react",
+		to_replace: "src/App.jsx,package.json",
+	},
 	"react-ts": {},
+}
+
+func checkGit() error {
+	_, err := exec.Command("git", "--help").Output()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func cloneRepoAndFolder(url string, folder string, output_name string) bool {
+	_, err := exec.Command("git", "clone", url, output_name).Output()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	cmd := exec.Command("git", "sparse-checkout", "set", "--no-cone", folder)
+	cmd.Dir = output_name
+	_, err = cmd.Output()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	cmd = exec.Command("git", "checkout")
+	cmd.Dir = output_name
+	_, err = cmd.Output()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	var paths = []string{}
+
+	err = filepath.Walk(folder, func(path string, _ os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		paths = append(paths, path)
+		return nil
+	})
+
+	for p := range paths {
+		fmt.Println("Type of p %T", p)
+		// d := strings.Replace(p, "", "", 0)
+	}
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return true
+
 }
 
 // genCmd represents the gen command
@@ -33,22 +101,28 @@ var genCmd = &cobra.Command{
 			return
 		}
 
-		template := args[0]
+		template_asked := args[0]
 		app_name := args[1]
+		if template, ok := templates[template_asked]; ok {
+			err := checkGit()
+			if err != nil {
+				log.Fatal(err)
+			}
 
+			cloneRepoAndFolder(template.url, template.folder, app_name)
+
+		} else {
+			fmt.Println("Template does not exist, please use on of these:")
+			fmt.Println("	x default - normal legacy web app (HTML/CSS/JS)")
+			fmt.Println("	x react - a JavaScript react web app")
+			fmt.Println("	x react-ts - a TypeScript react web app")
+			return
+		}
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(genCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// genCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// genCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	log.SetFlags(log.Lshortfile | log.LstdFlags)
 }
